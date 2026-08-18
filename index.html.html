@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦈 SharkLearn - Aprende Pronombres</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  
+  :root {
+    --shark-dark: #1e5fa8;
+    --shark-blue: #3a8fd4;
+    --shark-light: #7ec8f0;
+    --shark-belly: #ffffff;
+    --shark-pink: #ff6b8a;
+    --shark-yellow: #ffd93d;
+    --ocean-deep: #0a4d68;
+    --ocean-mid: #088395;
+    --ocean-light: #05bfdb;
+    --ocean-foam: #a0e7e5;
+    --sand: #ffeaa7;
+    --coral: #ff6b6b;
+    --coral-dark: #ee5a52;
+    --gold: #ffd93d;
+    --gold-dark: #f4c430;
+    --success: #6bcf7f;
+    --success-dark: #4caf50;
+    --bg: #e8f4fc;
+    --card: #ffffff;
+    --text: #1a3a52;
+    --text-light: #5a7a92;
+    --shadow: 0 8px 24px rgba(30, 95, 168, 0.15);
+    --shadow-hover: 0 12px 32px rgba(30, 95, 168, 0.25);
+  }
+  
+  body {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #a0e7e5 0%, #e8f4fc 50%, #ffeaa7 100%);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+    padding-bottom: 80px;
+  }
+  
+  .bubbles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bubble {
+    position: absolute;
+    bottom: -100px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    to { transform: translateY(-110vh) translateX(30px); opacity: 0; }
+  }
+  
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .logo {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--shark-blue);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stats {
+    display: flex;
+    gap: 12px;
+    font-weight: 700;
+  }
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--bg);
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .stat.pulse { animation: pulse 0.5s; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .stat-icon { font-size: 18px; }
+  .stat-xp { color: var(--ocean-mid); }
+  .stat-coins { color: var(--gold-dark); }
+  .stat-hearts { color: var(--coral); }
+  .stat-streak { color: #ff9f43; }
+  
+  .screen {
+    display: none;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .home-hero {
+    text-align: center;
+    padding: 20px 0 30px;
+  }
+  .home-hero h1 {
+    font-size: 32px;
+    color: var(--shark-blue);
+    margin-bottom: 8px;
+    font-weight: 900;
+  }
+  .home-hero p {
+    color: var(--text-light);
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .shark-container {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 20px;
+    position: relative;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+  }
+  .play-btn {
+    background: linear-gradient(135deg, var(--success), var(--success-dark));
+    color: white;
+    border: none;
+    padding: 20px 60px;
+    font-size: 24px;
+    font-weight: 900;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 0 #3d8b4f, var(--shadow);
+    transition: all 0.15s;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+  .play-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 0 #3d8b4f, var(--shadow-hover); }
+  .play-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #3d8b4f, var(--shadow); }
+  .play-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shine 3s infinite;
+  }
+  @keyframes shine {
+    to { left: 200%; }
+  }
+  
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .quick-stat-card {
+    background: white;
+    padding: 16px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .quick-stat-card .value {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--shark-blue);
+  }
+  .quick-stat-card .label {
+    font-size: 12px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  
+  .map-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--shark-blue);
+    margin-bottom: 20px;
+  }
+  .world {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .world-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .world-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    font-weight: 900;
+  }
+  .world-1 .world-icon { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+  .world-2 .world-icon { background: linear-gradient(135deg, #55efc4, #00b894); }
+  .world-3 .world-icon { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+  .world-4 .world-icon { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+  .world-5 .world-icon { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .world-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .world-subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .levels-path {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    padding: 10px 0;
+  }
+  .level-node {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #dfe6e9, #b2bec3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    color: white;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 0 #95a5a6, 0 6px 12px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+  }
+  .level-node.unlocked {
+    background: linear-gradient(135deg, var(--shark-light), var(--shark-blue));
+    box-shadow: 0 4px 0 var(--shark-dark), 0 6px 12px rgba(58, 143, 212, 0.3);
+    animation: bob 2s ease-in-out infinite;
+  }
+  .level-node.unlocked:nth-child(2n) { animation-delay: 0.3s; }
+  .level-node.unlocked:nth-child(3n) { animation-delay: 0.6s; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .level-node.completed {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    box-shadow: 0 4px 0 #c9981f, 0 6px 12px rgba(255, 217, 61, 0.4);
+  }
+  .level-node.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .level-node:hover:not(.locked) { transform: scale(1.08); }
+  .level-node .crown {
+    position: absolute;
+    top: -15px;
+    font-size: 20px;
+  }
+  
+  .lesson-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-light);
+    padding: 4px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 16px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--success-dark));
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: progressShine 2s infinite;
+  }
+  @keyframes progressShine {
+    to { transform: translateX(100%); }
+  }
+  .hearts-display {
+    display: flex;
+    gap: 2px;
+    font-size: 20px;
+  }
+  
+  .question-card {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    animation: slideIn 0.4s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .question-type {
+    display: inline-block;
+    background: var(--ocean-foam);
+    color: var(--ocean-deep);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .question-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .question-image {
+    text-align: center;
+    font-size: 80px;
+    margin: 16px 0;
+  }
+  .sentence-display {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    padding: 20px;
+    background: var(--bg);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .blank {
+    display: inline-block;
+    min-width: 80px;
+    padding: 4px 12px;
+    background: white;
+    border: 3px dashed var(--shark-light);
+    border-radius: 10px;
+    color: var(--shark-blue);
+    font-weight: 900;
+  }
+  .blank.filled {
+    border-style: solid;
+    background: var(--ocean-foam);
+    color: var(--shark-dark);
+  }
+  
+  .options-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .option-btn {
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-bottom-width: 5px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .option-btn:hover {
+    border-color: var(--shark-light);
+    transform: translateY(-2px);
+  }
+  .option-btn:active {
+    transform: translateY(2px);
+    border-bottom-width: 3px;
+  }
+  .option-btn .option-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--shark-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+  }
+  .option-btn.correct {
+    background: var(--success);
+    color: white;
+    border-color: var(--success-dark);
+    animation: correctPop 0.4s;
+  }
+  .option-btn.wrong {
+    background: var(--coral);
+    color: white;
+    border-color: var(--coral-dark);
+    animation: shake 0.4s;
+  }
+  @keyframes correctPop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  
+  .catch-area {
+    position: relative;
+    height: 320px;
+    background: linear-gradient(180deg, #a0e7e5, #05bfdb);
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
+  }
+  .catch-target {
+    position: absolute;
+    font-size: 14px;
+    font-weight: 900;
+    background: white;
+    color: var(--shark-dark);
+    padding: 12px 18px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.1s;
+    user-select: none;
+  }
+  .catch-target:hover { transform: scale(1.1); }
+  .catch-target.correct { background: var(--success); color: white; }
+  .catch-target.wrong { background: var(--coral); color: white; animation: shake 0.3s; }
+  .catch-instruction {
+    text-align: center;
+    font-weight: 700;
+    color: var(--shark-dark);
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    min-height: 60px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 16px;
+    margin-bottom: 12px;
+  }
+  .word-chip {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-bottom-width: 4px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 16px;
+  }
+  .word-chip:hover { transform: translateY(-2px); }
+  .word-chip.used { opacity: 0.3; pointer-events: none; }
+  .answer-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    min-height: 60px;
+    padding: 12px;
+    background: white;
+    border: 3px dashed var(--shark-light);
+    border-radius: 16px;
+  }
+  .answer-chip {
+    background: var(--ocean-foam);
+    color: var(--shark-dark);
+    border: 2px solid var(--shark-light);
+    border-bottom-width: 4px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .timer-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--gold), var(--coral));
+    transition: width 0.1s linear;
+  }
+  
+  .feedback {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .feedback.show { transform: translateY(0); }
+  .feedback.correct {
+    background: linear-gradient(135deg, var(--success), var(--success-dark));
+    color: white;
+  }
+  .feedback.wrong {
+    background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+    color: white;
+  }
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .feedback-icon { font-size: 32px; }
+  .feedback-title { font-size: 22px; font-weight: 900; }
+  .feedback-explanation {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    opacity: 0.95;
+  }
+  .feedback-btn {
+    width: 100%;
+    background: white;
+    color: var(--text);
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .feedback.correct .feedback-btn { color: var(--success-dark); }
+  .feedback.wrong .feedback-btn { color: var(--coral-dark); }
+  
+  .result-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    margin-top: 20px;
+  }
+  .result-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--shark-blue);
+    margin-bottom: 8px;
+  }
+  .result-subtitle {
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .result-stat {
+    background: var(--bg);
+    padding: 16px 8px;
+    border-radius: 16px;
+  }
+  .result-stat .value {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--shark-blue);
+  }
+  .result-stat .label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .reward-chest {
+    font-size: 80px;
+    margin: 20px 0;
+    animation: chestBounce 0.8s ease;
+  }
+  @keyframes chestBounce {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .continue-btn {
+    background: linear-gradient(135deg, var(--shark-blue), var(--shark-dark));
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    font-size: 18px;
+    font-weight: 900;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 var(--shark-dark), var(--shadow);
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .continue-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--shark-dark); }
+  
+  .shop-section {
+    margin-bottom: 24px;
+  }
+  .shop-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--shark-blue);
+    margin-bottom: 12px;
+  }
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .shop-item {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .shop-item:hover { transform: translateY(-4px); }
+  .shop-item.owned {
+    border: 3px solid var(--success);
+  }
+  .shop-item.equipped {
+    border: 3px solid var(--gold);
+    background: linear-gradient(135deg, #fff9e0, white);
+  }
+  .shop-item-icon {
+    font-size: 50px;
+    margin-bottom: 8px;
+  }
+  .shop-item-name {
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  .shop-item-price {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: var(--gold-dark);
+    font-size: 13px;
+  }
+  .shop-item.owned .shop-item-price {
+    background: var(--success);
+    color: white;
+  }
+  .shop-item.equipped .shop-item-price {
+    background: var(--gold);
+    color: var(--text);
+  }
+  
+  .profile-header {
+    text-align: center;
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+  }
+  .profile-name {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--shark-blue);
+  }
+  .profile-level {
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+  .xp-bar {
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-dark));
+    border-radius: 6px;
+    transition: width 0.5s;
+  }
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .badge {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 8px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .badge.locked { opacity: 0.4; filter: grayscale(1); }
+  .badge-icon { font-size: 36px; margin-bottom: 4px; }
+  .badge-name { font-size: 11px; font-weight: 700; color: var(--text); }
+  
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    z-index: 50;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--text-light);
+    font-weight: 700;
+    font-size: 11px;
+    transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--shark-blue); }
+  .nav-btn .nav-icon { font-size: 24px; }
+  
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.3s; }
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal h2 {
+    color: var(--shark-blue);
+    margin-bottom: 12px;
+    font-size: 24px;
+  }
+  .modal p {
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+  .modal-example {
+    background: var(--bg);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: var(--shark-dark);
+  }
+  .modal-btn {
+    background: linear-gradient(135deg, var(--shark-blue), var(--shark-dark));
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 900;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  .battle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .battle-health {
+    flex: 1;
+    margin: 0 12px;
+  }
+  .health-bar {
+    height: 14px;
+    background: #e0e0e0;
+    border-radius: 7px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--coral), var(--success));
+    transition: width 0.4s;
+  }
+  .battle-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+  }
+  .battle-shark {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--text);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 700;
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--shadow);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  
+  @media (max-width: 400px) {
+    .stats { gap: 6px; }
+    .stat { padding: 4px 8px; font-size: 12px; }
+    .question-text { font-size: 18px; }
+    .home-hero h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<div class="top-bar">
+  <div class="logo"> SharkLearn</div>
+  <div class="stats">
+    <div class="stat stat-streak" id="stat-streak"><span class="stat-icon">🔥</span><span id="streak-val">0</span></div>
+    <div class="stat stat-xp" id="stat-xp"><span class="stat-icon">⭐</span><span id="xp-val">0</span></div>
+    <div class="stat stat-coins" id="stat-coins"><span class="stat-icon"></span><span id="coins-val">0</span></div>
+    <div class="stat stat-hearts" id="stat-hearts"><span class="stat-icon">❤️</span><span id="hearts-val">5</span></div>
+  </div>
+</div>
+
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <div class="shark-container" id="home-shark"></div>
+    <h1>¡Hola, aprendiz!</h1>
+    <p>Aprende pronombres en inglés jugando con Shark 🦈</p>
+    <button class="play-btn" onclick="goToMap()">▶ JUGAR</button>
+    <div class="quick-stats">
+      <div class="quick-stat-card">
+        <div class="value" id="home-level">1</div>
+        <div class="label">Nivel</div>
+      </div>
+      <div class="quick-stat-card">
+        <div class="value" id="home-lessons">0</div>
+        <div class="label">Lecciones</div>
+      </div>
+      <div class="quick-stat-card">
+        <div class="value" id="home-streak">0 🔥</div>
+        <div class="label">Racha</div>
+      </div>
+      <div class="quick-stat-card">
+        <div class="value" id="home-badges">0 🏅</div>
+        <div class="label">Insignias</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-map">
+  <div class="map-title">🗺️ Tu aventura</div>
+  <div id="worlds-container"></div>
+</div>
+
+<div class="screen" id="screen-lesson">
+  <div class="lesson-header">
+    <button class="close-btn" onclick="exitLesson()">✕</button>
+    <div class="progress-bar"><div class="progress-fill" id="lesson-progress" style="width:0%"></div></div>
+    <div class="hearts-display" id="hearts-display"></div>
+  </div>
+  <div id="lesson-content"></div>
+</div>
+
+<div class="screen" id="screen-result">
+  <div class="result-card">
+    <div class="shark-container" id="result-shark" style="width:150px;height:150px;"></div>
+    <div class="result-title" id="result-title">¡Nivel completado!</div>
+    <div class="result-subtitle" id="result-subtitle">Shark está orgulloso de ti 🎉</div>
+    <div class="reward-chest"></div>
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="value" id="result-xp">+0</div>
+        <div class="label">XP</div>
+      </div>
+      <div class="result-stat">
+        <div class="value" id="result-coins">+0</div>
+        <div class="label">Monedas</div>
+      </div>
+      <div class="result-stat">
+        <div class="value" id="result-accuracy">0%</div>
+        <div class="label">Precisión</div>
+      </div>
+    </div>
+    <button class="continue-btn" onclick="goToMap()">CONTINUAR</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-shop">
+  <div class="map-title">🛍️ Tienda de Shark</div>
+  <div class="shop-section">
+    <div class="shop-title">🎩 Sombreros y gorros</div>
+    <div class="shop-grid" id="shop-hats"></div>
+  </div>
+  <div class="shop-section">
+    <div class="shop-title">🎧 Accesorios</div>
+    <div class="shop-grid" id="shop-accessories"></div>
+  </div>
+  <div class="shop-section">
+    <div class="shop-title">🎨 Skins especiales</div>
+    <div class="shop-grid" id="shop-skins"></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-profile">
+  <div class="profile-header">
+    <div class="profile-avatar" id="profile-shark"></div>
+    <div class="profile-name">Aprendiz</div>
+    <div class="profile-level" id="profile-level">Nivel 1 · 0 XP</div>
+    <div class="xp-bar"><div class="xp-fill" id="profile-xp-fill" style="width:0%"></div></div>
+  </div>
+  <div class="shop-title">🏅 Insignias</div>
+  <div class="badges-grid" id="badges-grid"></div>
+</div>
+
+<div class="feedback" id="feedback">
+  <div class="feedback-header">
+    <div class="feedback-icon" id="feedback-icon">✅</div>
+    <div class="feedback-title" id="feedback-title">¡Correcto!</div>
+  </div>
+  <div class="feedback-explanation" id="feedback-explanation"></div>
+  <button class="feedback-btn" id="feedback-btn" onclick="nextQuestion()">CONTINUAR</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="shark-container" id="modal-shark" style="width:120px;height:120px;margin:0 auto 12px;"></div>
+    <h2 id="modal-title">¡Aprendamos!</h2>
+    <p id="modal-text"></p>
+    <div class="modal-example" id="modal-example"></div>
+    <button class="modal-btn" onclick="closeModal()">¡ENTENDIDO!</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" data-screen="home" onclick="showScreen('home')">
+    <span class="nav-icon">🏠</span>Inicio
+  </button>
+  <button class="nav-btn" data-screen="map" onclick="showScreen('map')">
+    <span class="nav-icon">🗺️</span>Mapa
+  </button>
+  <button class="nav-btn" data-screen="shop" onclick="showScreen('shop')">
+    <span class="nav-icon">🛍️</span>Tienda
+  </button>
+  <button class="nav-btn" data-screen="profile" onclick="showScreen('profile')">
+    <span class="nav-icon">👤</span>Perfil
+  </button>
+</div>
+
+<script>
+const STATE = {
+  xp: 0, coins: 50, hearts: 5, streak: 0, lastPlayDate: null,
+  level: 1, lessonsCompleted: 0, currentWorld: 1, currentLevel: 1,
+  completedLevels: [], ownedItems: ['default'],
+  equippedItems: { hat: null, accessory: null, skin: 'default' },
+  badges: [], wrongHistory: [],
+  currentLesson: null, questionIndex: 0, correctAnswers: 0, wrongAnswers: 0,
+  lessonXp: 0, lessonCoins: 0
+};
+
+function saveState() { localStorage.setItem('sharklearn', JSON.stringify(STATE)); }
+function loadState() {
+  const saved = localStorage.getItem('sharklearn');
+  if (saved) {
+    Object.assign(STATE, JSON.parse(saved));
+    const today = new Date().toDateString();
+    if (STATE.lastPlayDate) {
+      const last = new Date(STATE.lastPlayDate);
+      const diff = Math.floor((new Date(today) - last) / 86400000);
+      if (diff > 1) STATE.streak = 0;
+    }
+  }
+}
+
+let audioCtx;
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function playSound(type) {
+  initAudio();
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  if (type === 'correct') {
+    osc.frequency.setValueAtTime(523, now);
+    osc.frequency.setValueAtTime(659, now + 0.1);
+    osc.frequency.setValueAtTime(784, now + 0.2);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc.start(now); osc.stop(now + 0.4);
+  } else if (type === 'wrong') {
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc.type = 'sawtooth';
+    osc.start(now); osc.stop(now + 0.3);
+  } else if (type === 'coin') {
+    osc.frequency.setValueAtTime(988, now);
+    osc.frequency.setValueAtTime(1319, now + 0.08);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    osc.start(now); osc.stop(now + 0.2);
+  } else if (type === 'levelup') {
+    [523, 659, 784, 1047].forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.15, now + i*0.1);
+      g.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.2);
+      o.start(now + i*0.1); o.stop(now + i*0.1 + 0.2);
+    });
+  } else if (type === 'click') {
+    osc.frequency.value = 600;
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.start(now); osc.stop(now + 0.05);
+  }
+}
+
+// ============================================================
+// SHARK SVG - NUEVO ESTILO KAWAII SEGÚN LAS IMÁGENES
+// ============================================================
+function createSharkSVG(expression = 'happy', size = 220) {
+  // Paleta de colores basada en las imágenes
+  const skins = {
+    default: { body: '#3a8fd4', bodyDark: '#1e5fa8', belly: '#ffffff', fin: '#1e5fa8', cheek: '#ffb3c6' },
+    golden: { body: '#f4c430', bodyDark: '#d4a017', belly: '#fff8dc', fin: '#d4a017', cheek: '#ffb3c6' },
+    pink: { body: '#ff9ec7', bodyDark: '#e879a8', belly: '#fff0f5', fin: '#e879a8', cheek: '#ffb3c6' },
+    green: { body: '#7ed957', bodyDark: '#5ab03a', belly: '#f0fff0', fin: '#5ab03a', cheek: '#ffb3c6' },
+    purple: { body: '#a78bfa', bodyDark: '#7c3aed', belly: '#f5f0ff', fin: '#7c3aed', cheek: '#ffb3c6' }
+  };
+  const skin = skins[STATE.equippedItems.skin] || skins.default;
+  
+  // Expresiones basadas en las imágenes: ¡Genial!, ¡Racha!, ¡Increíble!, Ups..., Hmmm..., Un descanso...
+  const expressions = {
+    happy: { // ¡Hola! Sonrisa guiñando
+      leftEye: 'wink', rightEye: 'open', mouth: 'big-smile', blush: true, eyebrows: 'normal'
+    },
+    celebrate: { // ¡Genial! Ojos cerrados felices, boca abierta
+      leftEye: 'happy-closed', rightEye: 'happy-closed', mouth: 'big-open', blush: true, eyebrows: 'happy'
+    },
+    excited: { // ¡Racha! Gafas de sol, sonrisa cool
+      leftEye: 'sunglasses', rightEye: 'sunglasses', mouth: 'cool-smile', blush: false, eyebrows: 'cool'
+    },
+    love: { // ¡Increíble! Corazones en los ojos
+      leftEye: 'heart', rightEye: 'heart', mouth: 'big-open', blush: true, eyebrows: 'happy'
+    },
+    sad: { // Ups... Ojos tristes, gota de sudor
+      leftEye: 'sad', rightEye: 'sad', mouth: 'sad', blush: false, eyebrows: 'sad', sweat: true
+    },
+    thinking: { // Hmmm... Ojos pensativos con signo de interrogación
+      leftEye: 'thinking', rightEye: 'thinking', mouth: 'small', blush: false, eyebrows: 'thinking', question: true
+    },
+    tired: { // Un descanso... Ojos cerrados durmiendo, burbuja
+      leftEye: 'sleeping', rightEye: 'sleeping', mouth: 'sleeping', blush: false, eyebrows: 'normal', zzz: true
+    },
+    angry: { // En batalla - ceño fruncido
+      leftEye: 'angry', rightEye: 'angry', mouth: 'determined', blush: false, eyebrows: 'angry'
+    },
+    cool: { // Con gafas de sol
+      leftEye: 'sunglasses', rightEye: 'sunglasses', mouth: 'cool-smile', blush: false, eyebrows: 'cool'
+    }
+  };
+  const expr = expressions[expression] || expressions.happy;
+  
+  // Sombrero/Accesorio de cabeza
+  let hatSvg = '';
+  if (STATE.equippedItems.hat === 'cap') {
+    hatSvg = `<g transform="translate(110, 52)">
+      <path d="M -38 5 Q -38 -20 0 -22 Q 38 -20 38 5 Z" fill="#ff6b6b"/>
+      <ellipse cx="0" cy="5" rx="42" ry="6" fill="#ff6b6b"/>
+      <path d="M 0 5 Q 30 8 45 3" stroke="#ee5a52" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <text x="-8" y="-5" fill="white" font-size="12" font-weight="bold">🦈</text>
+    </g>`;
+  } else if (STATE.equippedItems.hat === 'sombrero') {
+    hatSvg = `<g transform="translate(110, 55)">
+      <ellipse cx="0" cy="5" rx="42" ry="6" fill="#4a6fa5"/>
+      <path d="M -28 5 Q -28 -25 0 -28 Q 28 -25 28 5 Z" fill="#4a6fa5"/>
+      <rect x="-28" y="-5" width="56" height="5" fill="#7ec8f0"/>
+    </g>`;
+  } else if (STATE.equippedItems.hat === 'hoodie') {
+    hatSvg = `<g transform="translate(110, 50)">
+      <path d="M -45 15 Q -45 -30 0 -35 Q 45 -30 45 15 Q 45 25 35 25 L -35 25 Q -45 25 -45 15 Z" fill="#2d5a8e"/>
+      <ellipse cx="0" cy="-10" rx="25" ry="20" fill="#1e3a5f"/>
+      <text x="-6" y="-5" fill="#7ec8f0" font-size="14">♪</text>
+    </g>`;
+  } else if (STATE.equippedItems.hat === 'crown') {
+    hatSvg = `<g transform="translate(110, 42)">
+      <path d="M -28 8 L -22 -15 L -10 0 L 0 -20 L 10 0 L 22 -15 L 28 8 Z" fill="#ffd93d" stroke="#f4c430" stroke-width="2"/>
+      <circle cx="-22" cy="-10" r="3" fill="#ff6b6b"/>
+      <circle cx="0" cy="-15" r="3" fill="#3a8fd4"/>
+      <circle cx="22" cy="-10" r="3" fill="#6bcf7f"/>
+    </g>`;
+  }
+  
+  // Accesorios
+  let accSvg = '';
+  if (STATE.equippedItems.accessory === 'headphones') {
+    accSvg = `<g>
+      <path d="M 65 95 Q 65 70 110 68 Q 155 70 155 95" stroke="#ffd93d" stroke-width="5" fill="none"/>
+      <rect x="58" y="90" width="14" height="20" rx="4" fill="#ffd93d"/>
+      <rect x="148" y="90" width="14" height="20" rx="4" fill="#ffd93d"/>
+    </g>`;
+  } else if (STATE.equippedItems.accessory === 'backpack') {
+    accSvg = `<g transform="translate(110, 140)">
+      <rect x="-35" y="-10" width="30" height="40" rx="8" fill="#1e5fa8"/>
+      <rect x="-30" y="-5" width="20" height="15" rx="4" fill="#3a8fd4"/>
+      <text x="-25" y="8" fill="white" font-size="10">🦈</text>
+    </g>`;
+  }
+  
+  // Ojos según expresión
+  let eyesSvg = '';
+  const eyeY = 95;
+  const leftEyeX = 82;
+  const rightEyeX = 138;
+  
+  if (expr.leftEye === 'wink') {
+    eyesSvg += `<path d="M ${leftEyeX-10} ${eyeY} Q ${leftEyeX} ${eyeY-8} ${leftEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.leftEye === 'open' || expr.leftEye === 'thinking') {
+    eyesSvg += `<circle cx="${leftEyeX}" cy="${eyeY}" r="14" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${leftEyeX+2}" cy="${eyeY+2}" r="8" fill="#1a1a1a"/>`;
+    eyesSvg += `<circle cx="${leftEyeX+5}" cy="${eyeY-2}" r="3" fill="white"/>`;
+  } else if (expr.leftEye === 'happy-closed') {
+    eyesSvg += `<path d="M ${leftEyeX-10} ${eyeY} Q ${leftEyeX} ${eyeY-10} ${leftEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.leftEye === 'sunglasses') {
+    eyesSvg += `<rect x="${leftEyeX-14}" y="${eyeY-10}" width="28" height="18" rx="4" fill="#1a1a1a"/>`;
+    eyesSvg += `<line x1="${leftEyeX+14}" y1="${eyeY-2}" x2="${rightEyeX-14}" y2="${eyeY-2}" stroke="#1a1a1a" stroke-width="3"/>`;
+  } else if (expr.leftEye === 'heart') {
+    eyesSvg += `<text x="${leftEyeX-10}" y="${eyeY+8}" font-size="22">❤️</text>`;
+  } else if (expr.leftEye === 'sad') {
+    eyesSvg += `<circle cx="${leftEyeX}" cy="${eyeY+3}" r="12" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${leftEyeX}" cy="${eyeY+6}" r="7" fill="#1a1a1a"/>`;
+    eyesSvg += `<circle cx="${leftEyeX+2}" cy="${eyeY+4}" r="2" fill="white"/>`;
+  } else if (expr.leftEye === 'sleeping') {
+    eyesSvg += `<path d="M ${leftEyeX-10} ${eyeY} L ${leftEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>`;
+  } else if (expr.leftEye === 'angry') {
+    eyesSvg += `<circle cx="${leftEyeX}" cy="${eyeY}" r="12" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${leftEyeX}" cy="${eyeY}" r="6" fill="#1a1a1a"/>`;
+    eyesSvg += `<path d="M ${leftEyeX-12} ${eyeY-12} L ${leftEyeX+8} ${eyeY-8}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  
+  if (expr.rightEye === 'open' || expr.rightEye === 'thinking') {
+    eyesSvg += `<circle cx="${rightEyeX}" cy="${eyeY}" r="14" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${rightEyeX+2}" cy="${eyeY+2}" r="8" fill="#1a1a1a"/>`;
+    eyesSvg += `<circle cx="${rightEyeX+5}" cy="${eyeY-2}" r="3" fill="white"/>`;
+  } else if (expr.rightEye === 'wink') {
+    eyesSvg += `<path d="M ${rightEyeX-10} ${eyeY} Q ${rightEyeX} ${eyeY-8} ${rightEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.rightEye === 'happy-closed') {
+    eyesSvg += `<path d="M ${rightEyeX-10} ${eyeY} Q ${rightEyeX} ${eyeY-10} ${rightEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.rightEye === 'sunglasses') {
+    eyesSvg += `<rect x="${rightEyeX-14}" y="${eyeY-10}" width="28" height="18" rx="4" fill="#1a1a1a"/>`;
+  } else if (expr.rightEye === 'heart') {
+    eyesSvg += `<text x="${rightEyeX-10}" y="${eyeY+8}" font-size="22">❤️</text>`;
+  } else if (expr.rightEye === 'sad') {
+    eyesSvg += `<circle cx="${rightEyeX}" cy="${eyeY+3}" r="12" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${rightEyeX}" cy="${eyeY+6}" r="7" fill="#1a1a1a"/>`;
+    eyesSvg += `<circle cx="${rightEyeX+2}" cy="${eyeY+4}" r="2" fill="white"/>`;
+  } else if (expr.rightEye === 'sleeping') {
+    eyesSvg += `<path d="M ${rightEyeX-10} ${eyeY} L ${rightEyeX+10} ${eyeY}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>`;
+  } else if (expr.rightEye === 'angry') {
+    eyesSvg += `<circle cx="${rightEyeX}" cy="${eyeY}" r="12" fill="white" stroke="#1a1a1a" stroke-width="2"/>`;
+    eyesSvg += `<circle cx="${rightEyeX}" cy="${eyeY}" r="6" fill="#1a1a1a"/>`;
+    eyesSvg += `<path d="M ${rightEyeX+12} ${eyeY-12} L ${rightEyeX-8} ${eyeY-8}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  
+  // Cejas
+  let eyebrowsSvg = '';
+  if (expr.eyebrows === 'happy') {
+    eyebrowsSvg += `<path d="M ${leftEyeX-12} ${eyeY-20} Q ${leftEyeX} ${eyeY-25} ${leftEyeX+12} ${eyeY-20}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    eyebrowsSvg += `<path d="M ${rightEyeX-12} ${eyeY-20} Q ${rightEyeX} ${eyeY-25} ${rightEyeX+12} ${eyeY-20}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.eyebrows === 'sad') {
+    eyebrowsSvg += `<path d="M ${leftEyeX-12} ${eyeY-18} Q ${leftEyeX} ${eyeY-15} ${leftEyeX+12} ${eyeY-20}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    eyebrowsSvg += `<path d="M ${rightEyeX-12} ${eyeY-20} Q ${rightEyeX} ${eyeY-15} ${rightEyeX+12} ${eyeY-18}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.eyebrows === 'angry') {
+    eyebrowsSvg += `<path d="M ${leftEyeX-12} ${eyeY-22} L ${leftEyeX+10} ${eyeY-16}" stroke="#1e5fa8" stroke-width="4" stroke-linecap="round"/>`;
+    eyebrowsSvg += `<path d="M ${rightEyeX+12} ${eyeY-22} L ${rightEyeX-10} ${eyeY-16}" stroke="#1e5fa8" stroke-width="4" stroke-linecap="round"/>`;
+  } else if (expr.eyebrows === 'thinking') {
+    eyebrowsSvg += `<path d="M ${leftEyeX-10} ${eyeY-20} Q ${leftEyeX} ${eyeY-22} ${leftEyeX+10} ${eyeY-18}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    eyebrowsSvg += `<path d="M ${rightEyeX-10} ${eyeY-18} Q ${rightEyeX} ${eyeY-22} ${rightEyeX+10} ${eyeY-20}" stroke="#1e5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+  
+  // Boca
+  let mouthSvg = '';
+  const mouthY = 130;
+  if (expr.mouth === 'big-smile') {
+    mouthSvg = `<path d="M 85 ${mouthY} Q 110 ${mouthY+20} 135 ${mouthY}" fill="#ff6b6b" stroke="#1a1a1a" stroke-width="2"/>`;
+    mouthSvg += `<path d="M 90 ${mouthY+2} L 95 ${mouthY+8} L 100 ${mouthY+2} L 105 ${mouthY+8} L 110 ${mouthY+2} L 115 ${mouthY+8} L 120 ${mouthY+2} L 125 ${mouthY+8} L 130 ${mouthY+2}" fill="white" stroke="white" stroke-width="1"/>`;
+  } else if (expr.mouth === 'big-open') {
+    mouthSvg = `<ellipse cx="110" cy="${mouthY+5}" rx="22" ry="18" fill="#ff6b6b" stroke="#1a1a1a" stroke-width="2"/>`;
+    mouthSvg += `<path d="M 92 ${mouthY} Q 110 ${mouthY-5} 128 ${mouthY}" fill="white" stroke="white" stroke-width="1"/>`;
+  } else if (expr.mouth === 'cool-smile') {
+    mouthSvg = `<path d="M 90 ${mouthY} Q 110 ${mouthY+8} 130 ${mouthY}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.mouth === 'sad') {
+    mouthSvg = `<path d="M 90 ${mouthY+10} Q 110 ${mouthY} 130 ${mouthY+10}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expr.mouth === 'small') {
+    mouthSvg = `<ellipse cx="110" cy="${mouthY+5}" rx="8" ry="6" fill="#ff6b6b" stroke="#1a1a1a" stroke-width="2"/>`;
+  } else if (expr.mouth === 'sleeping') {
+    mouthSvg = `<ellipse cx="110" cy="${mouthY+5}" rx="10" ry="8" fill="#ff9ec7" stroke="#1a1a1a" stroke-width="2"/>`;
+    mouthSvg += `<circle cx="125" cy="${mouthY-5}" r="8" fill="none" stroke="#7ec8f0" stroke-width="2"/>`;
+    mouthSvg += `<circle cx="132" cy="${mouthY-12}" r="5" fill="none" stroke="#7ec8f0" stroke-width="1.5"/>`;
+  } else if (expr.mouth === 'determined') {
+    mouthSvg = `<path d="M 88 ${mouthY+5} Q 110 ${mouthY+10} 132 ${mouthY+5}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    mouthSvg += `<path d="M 95 ${mouthY+5} L 100 ${mouthY+10} L 105 ${mouthY+5} L 110 ${mouthY+10} L 115 ${mouthY+5} L 120 ${mouthY+10} L 125 ${mouthY+5}" fill="white" stroke="white" stroke-width="1"/>`;
+  }
+  
+  // Rubor
+  const blushSvg = expr.blush ? `
+    <ellipse cx="68" cy="115" rx="10" ry="6" fill="${skin.cheek}" opacity="0.7"/>
+    <ellipse cx="152" cy="115" rx="10" ry="6" fill="${skin.cheek}" opacity="0.7"/>` : '';
+  
+  // Gota de sudor
+  const sweatSvg = expr.sweat ? `
+    <path d="M 155 80 Q 160 70 165 80 Q 160 90 155 80" fill="#7ec8f0" stroke="#1e5fa8" stroke-width="1"/>` : '';
+  
+  // Signo de interrogación
+  const questionSvg = expr.question ? `
+    <text x="155" y="75" font-size="28" fill="#ffd93d" font-weight="bold">?</text>` : '';
+  
+  // Zzz
+  const zzzSvg = expr.zzz ? `
+    <text x="150" y="80" font-size="16" fill="#7ec8f0" font-weight="bold">z</text>
+    <text x="160" y="70" font-size="12" fill="#7ec8f0" font-weight="bold">z</text>
+    <text x="168" y="62" font-size="10" fill="#7ec8f0" font-weight="bold">z</text>` : '';
+  
+  // Destellos para celebrate
+  const sparklesSvg = expression === 'celebrate' ? `
+    <text x="50" y="70" font-size="16">✨</text>
+    <text x="160" y="75" font-size="14">✨</text>
+    <text x="60" y="160" font-size="12">⭐</text>
+    <text x="165" y="155" font-size="14">⭐</text>` : '';
+  
+  // Corazones flotantes para love
+  const heartsSvg = expression === 'love' ? `
+    <text x="55" y="70" font-size="18">❤️</text>
+    <text x="160" y="65" font-size="16">❤️</text>
+    <text x="170" y="90" font-size="12">💕</text>` : '';
+  
+  return `
+    <svg class="shark-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Aleta dorsal -->
+      <path d="M 110 35 L 95 70 L 125 70 Z" fill="${skin.fin}"/>
+      <!-- Cuerpo principal (forma ovalada kawaii) -->
+      <ellipse cx="110" cy="125" rx="72" ry="68" fill="${skin.body}"/>
+      <!-- Panza blanca -->
+      <ellipse cx="110" cy="145" rx="52" ry="42" fill="${skin.belly}"/>
+      <!-- Aletas laterales -->
+      <path d="M 42 130 Q 22 140 30 160 Q 45 155 52 140 Z" fill="${skin.body}"/>
+      <path d="M 178 130 Q 198 140 190 160 Q 175 155 168 140 Z" fill="${skin.body}"/>
+      <!-- Cola -->
+      <path d="M 175 135 Q 200 125 208 110 Q 205 135 208 160 Q 200 145 175 145 Z" fill="${skin.fin}"/>
+      <!-- Detalles de branquias -->
+      <path d="M 60 110 Q 65 115 60 120" stroke="${skin.bodyDark}" stroke-width="2" fill="none" opacity="0.5"/>
+      <path d="M 65 112 Q 70 117 65 122" stroke="${skin.bodyDark}" stroke-width="2" fill="none" opacity="0.5"/>
+      <path d="M 70 114 Q 75 119 70 124" stroke="${skin.bodyDark}" stroke-width="2" fill="none" opacity="0.5"/>
+      <!-- Ojos -->
+      ${eyesSvg}
+      ${eyebrowsSvg}
+      <!-- Boca -->
+      ${mouthSvg}
+      ${blushSvg}
+      ${sweatSvg}
+      ${questionSvg}
+      ${zzzSvg}
+      ${sparklesSvg}
+      ${heartsSvg}
+      ${hatSvg}
+      ${accSvg}
+    </svg>
+  `;
+}
+
+function renderShark(container, expression = 'happy') {
+  if (typeof container === 'string') container = document.getElementById(container);
+  if (container) container.innerHTML = createSharkSVG(expression);
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-btn[data-screen="${name}"]`);
+  if (navBtn) navBtn.classList.add('active');
+  if (name === 'home') { renderShark('home-shark', 'happy'); updateHomeStats(); }
+  else if (name === 'map') renderMap();
+  else if (name === 'shop') renderShop();
+  else if (name === 'profile') renderProfile();
+  playSound('click');
+}
+
+function goToMap() { showScreen('map'); }
+
+function updateUI() {
+  document.getElementById('xp-val').textContent = STATE.xp;
+  document.getElementById('coins-val').textContent = STATE.coins;
+  document.getElementById('hearts-val').textContent = STATE.hearts;
+  document.getElementById('streak-val').textContent = STATE.streak;
+  saveState();
+}
+
+function updateHomeStats() {
+  document.getElementById('home-level').textContent = STATE.level;
+  document.getElementById('home-lessons').textContent = STATE.lessonsCompleted;
+  document.getElementById('home-streak').textContent = STATE.streak + ' 🔥';
+  document.getElementById('home-badges').textContent = STATE.badges.length + ' 🏅';
+}
+
+function pulseStat(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+const WORLDS = [
+  { id: 1, name: 'Playa Soleada', subtitle: 'I / You / He / She / It', icon: '🏖️', levels: 5 },
+  { id: 2, name: 'Arrecife Coral', subtitle: 'We / They', icon: '🐠', levels: 5 },
+  { id: 3, name: 'Cueva Misteriosa', subtitle: 'Object pronouns', icon: '🐙', levels: 5 },
+  { id: 4, name: 'Abismo Profundo', subtitle: 'Possessive & Reflexive', icon: '🦑', levels: 5 },
+  { id: 5, name: 'Tormenta Final', subtitle: 'Todos los pronombres', icon: '⚡', levels: 5 }
+];
+
+function renderMap() {
+  const container = document.getElementById('worlds-container');
+  container.innerHTML = '';
+  WORLDS.forEach(world => {
+    const worldEl = document.createElement('div');
+    worldEl.className = `world world-${world.id}`;
+    let levelsHtml = '';
+    for (let i = 1; i <= world.levels; i++) {
+      const levelId = `${world.id}-${i}`;
+      const completed = STATE.completedLevels.includes(levelId);
+      const prevCompleted = i === 1 ? (world.id === 1 || STATE.completedLevels.includes(`${world.id-1}-${WORLDS[world.id-2].levels}`)) : STATE.completedLevels.includes(`${world.id}-${i-1}`);
+      const unlocked = prevCompleted;
+      let cls = 'level-node';
+      if (completed) cls += ' completed';
+      else if (unlocked) cls += ' unlocked';
+      else cls += ' locked';
+      levelsHtml += `<div class="${cls}" onclick="startLesson(${world.id}, ${i})">${completed ? '<span class="crown">⭐</span>' : ''}${i}</div>`;
+    }
+    worldEl.innerHTML = `<div class="world-header"><div class="world-icon">${world.icon}</div><div><div class="world-title">${world.name}</div><div class="world-subtitle">${world.subtitle}</div></div></div><div class="levels-path">${levelsHtml}</div>`;
+    container.appendChild(worldEl);
+  });
+}
+
+const TUTORIALS = {
+  '1-1': { title: '¿Qué es un pronombre?', text: 'Un pronombre es una palabra que usamos EN LUGAR de un nombre. En vez de repetir "María" muchas veces, decimos "she" (ella).', example: 'María is happy → <b>She</b> is happy' },
+  '1-2': { title: 'I y You', text: '<b>I</b> = Yo (para hablar de ti mismo)<br><b>You</b> = Tú / Ustedes (para hablar con alguien)', example: '<b>I</b> am a student. / <b>You</b> are my friend.' },
+  '1-3': { title: 'He, She, It', text: '<b>He</b> = Él (hombres/niños)<br><b>She</b> = Ella (mujeres/niñas)<br><b>It</b> = Eso (cosas, animales)', example: '<b>He</b> is tall. / <b>She</b> is smart. / <b>It</b> is a book.' },
+  '2-1': { title: 'We y They', text: '<b>We</b> = Nosotros (tú + otros)<br><b>They</b> = Ellos/Ellas (varias personas o cosas)', example: '<b>We</b> are friends. / <b>They</b> are students.' },
+  '3-1': { title: 'Object Pronouns', text: 'Los pronombres de objeto reciben la acción: <b>me, you, him, her, it, us, them</b>. Van DESPUÉS del verbo.', example: 'She called <b>me</b>. / I saw <b>them</b>.' },
+  '4-1': { title: 'Possessive Pronouns', text: 'Indican posesión: <b>mine, yours, his, hers, ours, theirs</b>. Reemplazan al sustantivo.', example: 'This book is <b>mine</b>. / That car is <b>hers</b>.' },
+  '4-3': { title: 'Reflexive Pronouns', text: 'Se usan cuando el sujeto y el objeto son la misma persona: <b>myself, yourself, himself, herself, itself, ourselves, themselves</b>.', example: 'I hurt <b>myself</b>. / She did it <b>herself</b>.' }
+};
+
+const QUESTION_BANK = {
+  '1-1': [
+    { type: 'multiple', q: '¿Qué pronombre usas para hablar de TI MISMO?', options: ['I', 'You', 'He', 'She'], correct: 0, explain: '"I" significa "yo", se usa para hablar de uno mismo.' },
+    { type: 'multiple', q: '¿Qué pronombre usas para hablar CON alguien?', options: ['I', 'You', 'He', 'It'], correct: 1, explain: '"You" significa "tú" o "ustedes".' },
+    { type: 'fill', sentence: '___ am a student.', options: ['I', 'You', 'He', 'She'], correct: 0, explain: 'Usamos "I" con "am" para hablar de nosotros mismos.' },
+    { type: 'fill', sentence: '___ are my best friend.', options: ['I', 'You', 'He', 'She'], correct: 1, explain: '"You are" se usa para dirigirse a otra persona.' },
+    { type: 'catch', target: 'I', options: ['I', 'You', 'He', 'She', 'It', 'We'], explain: '"I" significa "yo".' }
+  ],
+  '1-2': [
+    { type: 'multiple', q: '¿Qué pronombre usas para un HOMBRE?', options: ['She', 'He', 'It', 'I'], correct: 1, explain: '"He" significa "él".' },
+    { type: 'multiple', q: '¿Qué pronombre usas para una MUJER?', options: ['He', 'She', 'It', 'They'], correct: 1, explain: '"She" significa "ella".' },
+    { type: 'multiple', q: '¿Qué pronombre usas para una COSA o ANIMAL?', options: ['He', 'She', 'It', 'You'], correct: 2, explain: '"It" se usa para cosas, objetos y animales.' },
+    { type: 'image', q: '¿Qué pronombre usarías para MARÍA?', image: '👩', options: ['He', 'She', 'It', 'They'], correct: 1, explain: 'María es mujer, usamos "She".' },
+    { type: 'image', q: '¿Qué pronombre usarías para un LIBRO?', image: '📚', options: ['He', 'She', 'It', 'We'], correct: 2, explain: 'Un libro es una cosa, usamos "It".' },
+    { type: 'fill', sentence: '___ is my brother.', options: ['He', 'She', 'It', 'I'], correct: 0, explain: 'Brother = hermano (hombre), usamos "He".' }
+  ],
+  '1-3': [
+    { type: 'order', words: ['She', 'is', 'a', 'teacher'], correct: 'She is a teacher', explain: 'Orden: Sujeto + verbo + complemento.' },
+    { type: 'order', words: ['I', 'am', 'happy'], correct: 'I am happy', explain: '"I" siempre va con "am".' },
+    { type: 'multiple', q: 'Completa: "My dog is cute. ___ is brown."', options: ['He', 'She', 'It', 'They'], correct: 2, explain: 'Un perro (animal) → "It".' },
+    { type: 'fill', sentence: '___ is raining today.', options: ['He', 'She', 'It', 'They'], correct: 2, explain: 'Para el clima usamos "It".' },
+    { type: 'detect', sentence: 'She is a doctor. He works at the hospital.', wrongWord: 'He', correct: 'She', explain: 'Si hablamos de "She" (doctora), debemos seguir con "She", no "He".' }
+  ],
+  '1-4': [
+    { type: 'battle', questions: [
+      { q: '___ am happy.', options: ['I', 'You', 'He'], correct: 0 },
+      { q: '___ is my sister.', options: ['He', 'She', 'It'], correct: 1 },
+      { q: 'The cat is hungry. ___ needs food.', options: ['He', 'She', 'It'], correct: 2 },
+      { q: '___ are a good student.', options: ['I', 'You', 'It'], correct: 1 }
+    ], explain: '¡Gran trabajo dominando los pronombres básicos!' },
+    { type: 'lightning', time: 30, questions: [
+      { q: 'Pronombre para "yo":', options: ['I', 'You', 'He'], correct: 0 },
+      { q: 'Pronombre para "ella":', options: ['He', 'She', 'It'], correct: 1 },
+      { q: 'Pronombre para cosa:', options: ['He', 'She', 'It'], correct: 2 },
+      { q: '___ is tall (hombre):', options: ['He', 'She', 'It'], correct: 0 },
+      { q: '___ are nice:', options: ['You', 'It', 'He'], correct: 0 }
+    ], explain: '¡Velocidad y precisión!' }
+  ],
+  '1-5': [
+    { type: 'boss', name: 'Guardián de la Playa', questions: [
+      { q: '___ is my father.', options: ['He', 'She', 'It'], correct: 0 },
+      { q: 'The book is interesting. ___ has pictures.', options: ['He', 'She', 'It'], correct: 2 },
+      { q: '___ are my friends.', options: ['You', 'He', 'It'], correct: 0 },
+      { q: 'My sister is kind. ___ helps me.', options: ['He', 'She', 'It'], correct: 1 },
+      { q: '___ am from Spain.', options: ['I', 'You', 'He'], correct: 0 }
+    ], explain: '¡Has derrotado al Guardián de la Playa!' }
+  ],
+  '2-1': [
+    { type: 'multiple', q: '¿Qué pronombre significa "nosotros"?', options: ['We', 'They', 'You', 'Us'], correct: 0, explain: '"We" = nosotros.' },
+    { type: 'multiple', q: '¿Qué pronombre significa "ellos/ellas"?', options: ['We', 'They', 'You', 'Us'], correct: 1, explain: '"They" = ellos/ellas.' },
+    { type: 'fill', sentence: '___ are going to the beach.', options: ['We', 'They', 'It'], correct: 0, explain: '"We are" = nosotros estamos.' },
+    { type: 'fill', sentence: '___ are students at this school.', options: ['We', 'They', 'I'], correct: 1, explain: '"They are" hablando de otras personas.' },
+    { type: 'order', words: ['They', 'are', 'playing', 'soccer'], correct: 'They are playing soccer', explain: 'Sujeto + verbo + acción.' }
+  ],
+  '2-2': [
+    { type: 'multiple', q: '"My friends and I" se reemplaza con:', options: ['We', 'They', 'You'], correct: 0, explain: 'Si tú estás incluido, usamos "We".' },
+    { type: 'multiple', q: '"Juan and María" se reemplaza con:', options: ['We', 'They', 'It'], correct: 1, explain: 'Si TÚ no estás incluido, usamos "They".' },
+    { type: 'image', q: '¿Qué pronombre para este grupo? (tú NO estás)', image: '👨‍‍👧‍👦', options: ['We', 'They', 'It'], correct: 1, explain: 'Varias personas sin ti → "They".' },
+    { type: 'detect', sentence: 'We is happy today.', wrongWord: 'We is', correct: 'We are', explain: '"We" siempre va con "are", nunca con "is".' }
+  ],
+  '2-3': [
+    { type: 'order', words: ['We', 'all', 'are', 'here'], correct: 'We all are here', explain: '"We" + complemento + verbo.' },
+    { type: 'fill', sentence: '___ live in Madrid.', options: ['We', 'They', 'It'], correct: 1, explain: 'Si hablamos de otras personas → "They".' },
+    { type: 'multiple', q: 'Elige la correcta:', options: ['They is my family', 'They are my family', 'They am my family'], correct: 1, explain: '"They" siempre con "are".' }
+  ],
+  '2-4': [
+    { type: 'battle', questions: [
+      { q: '___ are brothers.', options: ['We', 'They'], correct: 1 },
+      { q: 'My sister and I = ___', options: ['We', 'They'], correct: 0 },
+      { q: '___ are ready!', options: ['We', 'It'], correct: 0 },
+      { q: 'The dogs = ___', options: ['We', 'They'], correct: 1 }
+    ], explain: '¡Dominas We y They!' }
+  ],
+  '2-5': [
+    { type: 'boss', name: 'Rey del Arrecife', questions: [
+      { q: 'My friends and me →', options: ['We', 'They'], correct: 0 },
+      { q: 'The cats →', options: ['We', 'They'], correct: 1 },
+      { q: '___ are a team.', options: ['We', 'They'], correct: 0 },
+      { q: 'Tom and Jerry →', options: ['We', 'They'], correct: 1 },
+      { q: '___ love pizza.', options: ['We', 'They'], correct: 0 }
+    ], explain: '¡Victoria sobre el Rey del Arrecife!' }
+  ],
+  '3-1': [
+    { type: 'multiple', q: 'Objeto de "I" es:', options: ['me', 'you', 'him'], correct: 0, explain: 'I → me (a mí).' },
+    { type: 'multiple', q: 'Objeto de "he" es:', options: ['her', 'him', 'them'], correct: 1, explain: 'He → him (a él).' },
+    { type: 'multiple', q: 'Objeto de "she" es:', options: ['him', 'her', 'it'], correct: 1, explain: 'She → her (a ella).' },
+    { type: 'multiple', q: 'Objeto de "we" es:', options: ['us', 'them', 'you'], correct: 0, explain: 'We → us (a nosotros).' },
+    { type: 'multiple', q: 'Objeto de "they" es:', options: ['us', 'them', 'him'], correct: 1, explain: 'They → them (a ellos).' }
+  ],
+  '3-2': [
+    { type: 'fill', sentence: 'She called ___ (a mí).', options: ['me', 'him', 'her'], correct: 0, explain: 'A mí → "me".' },
+    { type: 'fill', sentence: 'I saw ___ (a él) yesterday.', options: ['me', 'him', 'her'], correct: 1, explain: 'A él → "him".' },
+    { type: 'fill', sentence: 'Tell ___ (a ella) the truth.', options: ['him', 'her', 'them'], correct: 1, explain: 'A ella → "her".' },
+    { type: 'fill', sentence: 'We helped ___ (a ellos).', options: ['us', 'them', 'him'], correct: 1, explain: 'A ellos → "them".' }
+  ],
+  '3-3': [
+    { type: 'multiple', q: '"Give the book to she" → correcto:', options: ['to she', 'to her', 'to hers'], correct: 1, explain: 'Después de preposición usamos objeto: "to her".' },
+    { type: 'detect', sentence: 'Him is my friend.', wrongWord: 'Him', correct: 'He', explain: '"Him" es objeto. Como sujeto usamos "He".' },
+    { type: 'order', words: ['She', 'gave', 'me', 'a', 'gift'], correct: 'She gave me a gift', explain: 'Sujeto + verbo + objeto + complemento.' }
+  ],
+  '3-4': [
+    { type: 'battle', questions: [
+      { q: 'I love ___ (a ella).', options: ['she', 'her', 'hers'], correct: 1 },
+      { q: '___ is nice (sujeto).', options: ['Him', 'He', 'Her'], correct: 1 },
+      { q: 'Call ___ (a nosotros).', options: ['we', 'us', 'our'], correct: 1 },
+      { q: '___ are here (sujeto).', options: ['Them', 'They', 'Their'], correct: 1 }
+    ], explain: '¡Dominas los pronombres de objeto!' }
+  ],
+  '3-5': [
+    { type: 'boss', name: 'Pulpo Abismal', questions: [
+      { q: 'I told ___ (a él) the news.', options: ['he', 'him', 'his'], correct: 1 },
+      { q: '___ is a doctor.', options: ['Her', 'She', 'Hers'], correct: 1 },
+      { q: 'They invited ___ (a nosotros).', options: ['we', 'us', 'our'], correct: 1 },
+      { q: 'Look at ___ (a ellas).', options: ['they', 'them', 'their'], correct: 1 },
+      { q: '___ are students.', options: ['Them', 'They', 'Their'], correct: 1 }
+    ], explain: '¡Has derrotado al Pulpo Abismal!' }
+  ],
+  '4-1': [
+    { type: 'multiple', q: '"This book is mine" → "mine" es:', options: ['Possessive adj', 'Possessive pronoun', 'Object pronoun'], correct: 1, explain: '"Mine" reemplaza al sustantivo, es pronombre posesivo.' },
+    { type: 'multiple', q: 'Posesivo de "I":', options: ['my/mine', 'me', 'I'], correct: 0, explain: 'my (adjetivo) / mine (pronombre).' },
+    { type: 'multiple', q: 'Posesivo de "you":', options: ['your/yours', 'you', 'yourselves'], correct: 0, explain: 'your / yours.' },
+    { type: 'multiple', q: 'Posesivo de "they":', options: ['their/theirs', 'them', 'they'], correct: 0, explain: 'their / theirs.' }
+  ],
+  '4-2': [
+    { type: 'fill', sentence: 'This pen is ___ (de mí).', options: ['my', 'mine', 'me'], correct: 1, explain: 'Sin sustantivo después → "mine".' },
+    { type: 'fill', sentence: '___ car is red.', options: ['My', 'Mine', 'Me'], correct: 0, explain: 'Con sustantivo después → "My".' },
+    { type: 'fill', sentence: 'That house is ___ (de ella).', options: ['her', 'hers', 'she'], correct: 1, explain: 'Sin sustantivo → "hers".' }
+  ],
+  '4-3': [
+    { type: 'multiple', q: 'Reflexivo de "I":', options: ['myself', 'me', 'mine'], correct: 0, explain: 'I → myself.' },
+    { type: 'multiple', q: 'Reflexivo de "she":', options: ['her', 'hers', 'herself'], correct: 2, explain: 'She → herself.' },
+    { type: 'multiple', q: 'Reflexivo de "they":', options: ['them', 'theirs', 'themselves'], correct: 2, explain: 'They → themselves.' },
+    { type: 'fill', sentence: 'I hurt ___ .', options: ['me', 'myself', 'mine'], correct: 1, explain: 'Sujeto y objeto iguales → reflexivo.' },
+    { type: 'fill', sentence: 'She did it ___ .', options: ['her', 'herself', 'hers'], correct: 1, explain: 'Ella lo hizo por sí misma.' }
+  ],
+  '4-4': [
+    { type: 'battle', questions: [
+      { q: 'This is ___ (de nosotros).', options: ['our', 'ours', 'us'], correct: 1 },
+      { q: '___ name is Ana.', options: ['Her', 'Hers', 'Herself'], correct: 0 },
+      { q: 'He cut ___ .', options: ['him', 'himself', 'his'], correct: 1 },
+      { q: 'Is this ___ ? (de ti)', options: ['your', 'yours', 'you'], correct: 1 }
+    ], explain: '¡Excelente con posesivos y reflexivos!' }
+  ],
+  '4-5': [
+    { type: 'boss', name: 'Calamar Gigante', questions: [
+      { q: 'The dog hurt ___ .', options: ['it', 'itself', 'its'], correct: 1 },
+      { q: 'This idea is ___ (de ellos).', options: ['their', 'theirs', 'them'], correct: 1 },
+      { q: '___ books are new.', options: ['Our', 'Ours', 'Us'], correct: 0 },
+      { q: 'She taught ___ .', options: ['her', 'herself', 'hers'], correct: 1 },
+      { q: 'That phone is ___ (de él).', options: ['his', 'him', 'he'], correct: 0 }
+    ], explain: '¡Victoria sobre el Calamar Gigante!' }
+  ],
+  '5-1': [
+    { type: 'mixed', questions: [
+      { q: '___ am ready. (sujeto)', options: ['I', 'Me', 'My'], correct: 0 },
+      { q: 'Call ___ . (objeto)', options: ['I', 'me', 'my'], correct: 1 },
+      { q: 'This is ___ . (posesivo)', options: ['I', 'me', 'mine'], correct: 2 },
+      { q: 'I did it ___ . (reflexivo)', options: ['me', 'my', 'myself'], correct: 2 }
+    ], explain: 'Mezcla de todos los tipos.' }
+  ],
+  '5-2': [
+    { type: 'detect', sentence: 'Her is my best friend.', wrongWord: 'Her', correct: 'She', explain: 'Como sujeto usamos "She", no "Her".' },
+    { type: 'detect', sentence: 'Us are going to the party.', wrongWord: 'Us', correct: 'We', explain: 'Como sujeto usamos "We", no "Us".' },
+    { type: 'detect', sentence: 'The cat hurt him.', wrongWord: 'him', correct: 'itself', explain: 'Si el gato se lastimó a sí mismo → "itself".' }
+  ],
+  '5-3': [
+    { type: 'lightning', time: 40, questions: [
+      { q: 'Sujeto de "yo":', options: ['I', 'Me', 'Mine'], correct: 0 },
+      { q: 'Objeto de "he":', options: ['he', 'him', 'his'], correct: 1 },
+      { q: 'Posesivo de "we":', options: ['our', 'ours', 'us'], correct: 1 },
+      { q: 'Reflexivo de "she":', options: ['her', 'hers', 'herself'], correct: 2 },
+      { q: '___ is tall.', options: ['Him', 'He', 'His'], correct: 1 },
+      { q: 'Tell ___ .', options: ['they', 'them', 'their'], correct: 1 }
+    ], explain: '¡Velocidad experta!' }
+  ],
+  '5-4': [
+    { type: 'battle', questions: [
+      { q: '___ are waiting. (sujeto)', options: ['Us', 'We', 'Our'], correct: 1 },
+      { q: 'She saw ___ .', options: ['I', 'me', 'my'], correct: 1 },
+      { q: 'The decision is ___ .', options: ['their', 'theirs', 'them'], correct: 1 },
+      { q: 'They enjoyed ___ .', options: ['them', 'their', 'themselves'], correct: 2 }
+    ], explain: '¡Casi llegas al final!' }
+  ],
+  '5-5': [
+    { type: 'boss', name: 'Shark Maestro', questions: [
+      { q: '___ and I are friends.', options: ['Him', 'He', 'His'], correct: 1 },
+      { q: 'The book is ___ .', options: ['my', 'mine', 'me'], correct: 1 },
+      { q: 'She made it by ___ .', options: ['her', 'hers', 'herself'], correct: 2 },
+      { q: 'Give it to ___ .', options: ['they', 'them', 'their'], correct: 1 },
+      { q: '___ is a hero.', options: ['Him', 'He', 'His'], correct: 1 }
+    ], explain: '¡Has derrotado a Shark Maestro! ¡ERES UN EXPERTO!' }
+  ]
+};
+
+function startLesson(worldId, levelId) {
+  const key = `${worldId}-${levelId}`;
+  const prevKey = levelId === 1 ? (worldId === 1 ? null : `${worldId-1}-${WORLDS[world.id-2].levels}`) : `${worldId}-${levelId-1}`;
+  const unlocked = !prevKey || STATE.completedLevels.includes(prevKey);
+  if (!unlocked) { showToast('🔒 Completa el nivel anterior primero'); return; }
+  if (STATE.hearts <= 0) { STATE.hearts = 5; updateUI(); }
+  if (TUTORIALS[key]) {
+    showTutorial(TUTORIALS[key], () => beginLesson(worldId, levelId, key));
+  } else {
+    beginLesson(worldId, levelId, key);
+  }
+}
+
+function showTutorial(tut, callback) {
+  document.getElementById('modal-title').textContent = tut.title;
+  document.getElementById('modal-text').innerHTML = tut.text;
+  document.getElementById('modal-example').innerHTML = tut.example;
+  renderShark('modal-shark', 'thinking');
+  document.getElementById('modal').classList.add('show');
+  window._tutorialCallback = callback;
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  if (window._tutorialCallback) { window._tutorialCallback(); window._tutorialCallback = null; }
+}
+
+function beginLesson(worldId, levelId, key) {
+  STATE.currentLesson = { worldId, levelId, key };
+  STATE.questionIndex = 0; STATE.correctAnswers = 0; STATE.wrongAnswers = 0;
+  STATE.lessonXp = 0; STATE.lessonCoins = 0;
+  const bank = QUESTION_BANK[key] || QUESTION_BANK['1-1'];
+  STATE.currentLesson.questions = bank;
+  showScreen('lesson');
+  updateHeartsDisplay();
+  renderQuestion();
+}
+
+function updateHeartsDisplay() {
+  const display = document.getElementById('hearts-display');
+  display.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const h = document.createElement('span');
+    h.textContent = i < STATE.hearts ? '❤️' : '🖤';
+    display.appendChild(h);
+  }
+}
+
+function renderQuestion() {
+  const lesson = STATE.currentLesson;
+  const questions = lesson.questions;
+  if (STATE.questionIndex >= questions.length) { finishLesson(); return; }
+  const progress = (STATE.questionIndex / questions.length) * 100;
+  document.getElementById('lesson-progress').style.width = progress + '%';
+  const q = questions[STATE.questionIndex];
+  const content = document.getElementById('lesson-content');
+  if (q.type === 'multiple') renderMultiple(q, content);
+  else if (q.type === 'fill') renderFill(q, content);
+  else if (q.type === 'image') renderImage(q, content);
+  else if (q.type === 'order') renderOrder(q, content);
+  else if (q.type === 'catch') renderCatch(q, content);
+  else if (q.type === 'detect') renderDetect(q, content);
+  else if (q.type === 'battle') renderBattle(q, content);
+  else if (q.type === 'lightning') renderLightning(q, content);
+  else if (q.type === 'boss') renderBoss(q, content);
+  else if (q.type === 'mixed') renderMixed(q, content);
+}
+
+function renderMultiple(q, content) {
+  content.innerHTML = `<div class="question-card"><div class="question-type">Elige la respuesta</div><div class="question-text">${q.q}</div><div class="options-grid">${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correct}, '${escape(q.explain)}')"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div></div>`;
+}
+function renderFill(q, content) {
+  content.innerHTML = `<div class="question-card"><div class="question-type">Completa la frase</div><div class="sentence-display">${q.sentence.replace('___', '<span class="blank" id="blank">___</span>')}</div><div class="options-grid">${q.options.map((opt, i) => `<button class="option-btn" onclick="checkFill(${i}, ${q.correct}, '${escape(q.explain)}', '${opt}')"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div></div>`;
+}
+function renderImage(q, content) {
+  content.innerHTML = `<div class="question-card"><div class="question-type">Asocia la imagen</div><div class="question-text">${q.q}</div><div class="question-image">${q.image}</div><div class="options-grid">${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correct}, '${escape(q.explain)}')"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div></div>`;
+}
+function renderOrder(q, content) {
+  const shuffled = [...q.words].sort(() => Math.random() - 0.5);
+  content.innerHTML = `<div class="question-card"><div class="question-type">Ordena la oración</div><div class="answer-area" id="answer-area"></div><div class="word-bank" id="word-bank">${shuffled.map((w, i) => `<div class="word-chip" data-word="${w}" onclick="addWord(this)">${w}</div>`).join('')}</div><button class="continue-btn" style="margin-top:16px" onclick="checkOrder('${escape(q.correct)}', '${escape(q.explain)}')">COMPROBAR</button></div>`;
+}
+function addWord(chip) {
+  const word = chip.dataset.word;
+  chip.classList.add('used');
+  const answer = document.getElementById('answer-area');
+  const newChip = document.createElement('div');
+  newChip.className = 'answer-chip';
+  newChip.textContent = word;
+  newChip.onclick = function() { chip.classList.remove('used'); newChip.remove(); playSound('click'); };
+  answer.appendChild(newChip);
+  playSound('click');
+}
+function checkOrder(correct, explain) {
+  const answer = [...document.querySelectorAll('#answer-area .answer-chip')].map(c => c.textContent).join(' ');
+  const isCorrect = answer === correct;
+  showFeedback(isCorrect, isCorrect ? '¡Perfecto!' : 'Orden correcto:', isCorrect ? '' : correct, explain);
+}
+function renderCatch(q, content) {
+  content.innerHTML = `<div class="question-card"><div class="question-type">Atrapa el pronombre</div><div class="catch-instruction">¡Toca "<b>${q.target}</b>" antes de que desaparezca!</div><div class="catch-area" id="catch-area"></div></div>`;
+  startCatchGame(q);
+}
+let catchInterval;
+function startCatchGame(q) {
+  const area = document.getElementById('catch-area');
+  if (!area) return;
+  area.innerHTML = '';
+  let spawned = 0;
+  const maxSpawn = 12;
+  catchInterval = setInterval(() => {
+    if (spawned >= maxSpawn) { clearInterval(catchInterval); showFeedback(false, '¡Se acabó el tiempo!', '', q.explain); return; }
+    const isTarget = Math.random() < 0.35;
+    const text = isTarget ? q.target : q.options[Math.floor(Math.random() * q.options.length)];
+    const target = document.createElement('div');
+    target.className = 'catch-target';
+    target.textContent = text;
+    target.style.left = Math.random() * 80 + '%';
+    target.style.top = Math.random() * 80 + '%';
+    target.onclick = function() {
+      if (text === q.target) { target.classList.add('correct'); clearInterval(catchInterval); setTimeout(() => showFeedback(true, '¡Atrapado!', '', q.explain), 300); }
+      else { target.classList.add('wrong'); setTimeout(() => target.remove(), 300); }
+    };
+    area.appendChild(target);
+    spawned++;
+    setTimeout(() => { if (target.parentNode && !target.classList.contains('correct')) { target.style.transition = 'opacity 0.5s'; target.style.opacity = '0'; setTimeout(() => target.remove(), 500); } }, 2500);
+  }, 700);
+}
+function renderDetect(q, content) {
+  const words = q.sentence.split(' ');
+  content.innerHTML = `<div class="question-card"><div class="question-type">Detecta el error</div><div class="question-text">Encuentra el pronombre incorrecto:</div><div class="sentence-display" style="font-size:22px">${words.map(w => `<span class="word-chip" style="display:inline-block;margin:2px;cursor:pointer" onclick="checkDetect(this, '${escape(q.wrongWord)}', '${escape(q.correct)}', '${escape(q.explain)}')">${w}</span>`).join(' ')}</div></div>`;
+}
+function checkDetect(el, wrong, correct, explain) {
+  const word = el.textContent.replace(/[.,]/g, '');
+  const isCorrect = word === wrong.replace(/[.,]/g, '');
+  if (isCorrect) { el.style.background = 'var(--success)'; el.style.color = 'white'; setTimeout(() => showFeedback(true, '¡Error detectado!', `Lo correcto es: ${correct}`, explain), 400); }
+  else { el.style.background = 'var(--coral)'; el.style.color = 'white'; setTimeout(() => { el.style.background = ''; el.style.color = ''; }, 500); }
+}
+function renderBattle(q, content) {
+  window._battleQ = q; window._battleIdx = 0; window._battlePlayerHP = 100; window._battleSharkHP = 100;
+  content.innerHTML = `<div class="question-card"><div class="question-type">️ Batalla contra Shark</div><div class="battle-container"><div class="battle-health"><div class="battle-label">Tú</div><div class="health-bar"><div class="health-fill" id="player-hp" style="width:100%"></div></div></div><div class="battle-shark" id="battle-shark"></div><div class="battle-health"><div class="battle-label">Shark</div><div class="health-bar"><div class="health-fill" id="shark-hp" style="width:100%"></div></div></div></div><div id="battle-content"></div></div>`;
+  renderShark('battle-shark', 'angry');
+  renderBattleQuestion();
+}
+function renderBattleQuestion() {
+  const q = window._battleQ;
+  if (window._battleIdx >= q.questions.length || window._battleSharkHP <= 0) { setTimeout(() => showFeedback(true, '¡Victoria!', '', q.explain), 500); return; }
+  if (window._battlePlayerHP <= 0) { setTimeout(() => showFeedback(false, 'Shark gana esta vez...', '¡Inténtalo de nuevo!', q.explain), 500); return; }
+  const bq = q.questions[window._battleIdx];
+  const bc = document.getElementById('battle-content');
+  bc.innerHTML = `<div class="question-text" style="font-size:18px">${bq.q}</div><div class="options-grid">${bq.options.map((opt, i) => `<button class="option-btn" onclick="battleAnswer(${i}, ${bq.correct})"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div>`;
+}
+function battleAnswer(selected, correct) {
+  const btns = document.querySelectorAll('#battle-content .option-btn');
+  if (selected === correct) { btns[selected].classList.add('correct'); window._battleSharkHP -= 30; document.getElementById('shark-hp').style.width = window._battleSharkHP + '%'; playSound('correct'); renderShark('battle-shark', 'sad'); }
+  else { btns[selected].classList.add('wrong'); btns[correct].classList.add('correct'); window._battlePlayerHP -= 30; document.getElementById('player-hp').style.width = window._battlePlayerHP + '%'; playSound('wrong'); renderShark('battle-shark', 'celebrate'); }
+  window._battleIdx++;
+  setTimeout(renderBattleQuestion, 1200);
+}
+function renderLightning(q, content) {
+  window._lightningQ = q; window._lightningIdx = 0; window._lightningTime = q.time; window._lightningScore = 0;
+  content.innerHTML = `<div class="question-card"><div class="question-type">⚡ Reto Relámpago (${q.time}s)</div><div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div><div id="lightning-content"></div></div>`;
+  renderLightningQuestion();
+  window._lightningTimer = setInterval(() => {
+    window._lightningTime -= 0.1;
+    const pct = (window._lightningTime / q.time) * 100;
+    document.getElementById('timer-fill').style.width = pct + '%';
+    if (window._lightningTime <= 0) { clearInterval(window._lightningTimer); showFeedback(true, `¡${window._lightningScore} correctas!`, '', q.explain); }
+  }, 100);
+}
+function renderLightningQuestion() {
+  const q = window._lightningQ;
+  if (window._lightningIdx >= q.questions.length) { clearInterval(window._lightningTimer); showFeedback(true, `¡${window._lightningScore} correctas!`, '', q.explain); return; }
+  const lq = q.questions[window._lightningIdx];
+  const lc = document.getElementById('lightning-content');
+  lc.innerHTML = `<div class="question-text" style="font-size:18px">${lq.q}</div><div class="options-grid">${lq.options.map((opt, i) => `<button class="option-btn" onclick="lightningAnswer(${i}, ${lq.correct})"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div>`;
+}
+function lightningAnswer(selected, correct) {
+  if (selected === correct) { window._lightningScore++; playSound('correct'); } else { playSound('wrong'); }
+  window._lightningIdx++;
+  renderLightningQuestion();
+}
+function renderBoss(q, content) {
+  window._bossQ = q; window._bossIdx = 0; window._bossSharkHP = 100;
+  content.innerHTML = `<div class="question-card"><div class="question-type">👑 JEFE FINAL: ${q.name}</div><div style="text-align:center;margin:16px 0"><div class="shark-container" id="boss-shark" style="width:160px;height:160px;margin:0 auto"></div><div class="battle-label" style="margin-top:8px">${q.name}</div><div class="health-bar" style="margin-top:8px"><div class="health-fill" id="boss-hp" style="width:100%;background:linear-gradient(90deg,#ff6b6b,#ee5a52)"></div></div></div><div id="boss-content"></div></div>`;
+  renderShark('boss-shark', 'angry');
+  renderBossQuestion();
+}
+function renderBossQuestion() {
+  const q = window._bossQ;
+  if (window._bossIdx >= q.questions.length || window._bossSharkHP <= 0) { setTimeout(() => showFeedback(true, '¡JEFE DERROTADO!', '', q.explain), 500); return; }
+  const bq = q.questions[window._bossIdx];
+  const bc = document.getElementById('boss-content');
+  bc.innerHTML = `<div class="question-text" style="font-size:18px">${bq.q}</div><div class="options-grid">${bq.options.map((opt, i) => `<button class="option-btn" onclick="bossAnswer(${i}, ${bq.correct})"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div>`;
+}
+function bossAnswer(selected, correct) {
+  const btns = document.querySelectorAll('#boss-content .option-btn');
+  if (selected === correct) { btns[selected].classList.add('correct'); window._bossSharkHP -= 22; document.getElementById('boss-hp').style.width = Math.max(0, window._bossSharkHP) + '%'; playSound('correct'); renderShark('boss-shark', 'sad'); }
+  else { btns[selected].classList.add('wrong'); btns[correct].classList.add('correct'); playSound('wrong'); renderShark('boss-shark', 'celebrate'); }
+  window._bossIdx++;
+  setTimeout(renderBossQuestion, 1200);
+}
+function renderMixed(q, content) {
+  window._mixedQ = q; window._mixedIdx = 0;
+  content.innerHTML = `<div class="question-card"><div class="question-type">🎯 Mezcla Total</div><div id="mixed-content"></div></div>`;
+  renderMixedQuestion();
+}
+function renderMixedQuestion() {
+  const q = window._mixedQ;
+  if (window._mixedIdx >= q.questions.length) { showFeedback(true, '¡Mezcla completada!', '', q.explain); return; }
+  const mq = q.questions[window._mixedIdx];
+  const mc = document.getElementById('mixed-content');
+  mc.innerHTML = `<div class="question-text" style="font-size:18px">${mq.q}</div><div class="options-grid">${mq.options.map((opt, i) => `<button class="option-btn" onclick="mixedAnswer(${i}, ${mq.correct})"><span class="option-num">${i+1}</span><span>${opt}</span></button>`).join('')}</div>`;
+}
+function mixedAnswer(selected, correct) {
+  const btns = document.querySelectorAll('#mixed-content .option-btn');
+  if (selected === correct) btns[selected].classList.add('correct');
+  else { btns[selected].classList.add('wrong'); btns[correct].classList.add('correct'); }
+  window._mixedIdx++;
+  setTimeout(renderMixedQuestion, 1000);
+}
+
+function checkAnswer(selected, correct, explain) {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  const isCorrect = selected === correct;
+  if (isCorrect) btns[selected].classList.add('correct');
+  else { btns[selected].classList.add('wrong'); btns[correct].classList.add('correct'); }
+  setTimeout(() => showFeedback(isCorrect, '', '', unescape(explain)), 600);
+}
+function checkFill(selected, correct, explain, word) {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  const isCorrect = selected === correct;
+  if (isCorrect) { btns[selected].classList.add('correct'); const blank = document.getElementById('blank'); blank.textContent = word; blank.classList.add('filled'); }
+  else { btns[selected].classList.add('wrong'); btns[correct].classList.add('correct'); }
+  setTimeout(() => showFeedback(isCorrect, '', '', unescape(explain)), 600);
+}
+
+function showFeedback(isCorrect, title, extra, explain) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('feedback-icon').textContent = isCorrect ? '✅' : '❌';
+  document.getElementById('feedback-title').textContent = title || (isCorrect ? '¡Correcto!' : 'Incorrecto');
+  document.getElementById('feedback-explanation').innerHTML = (extra ? `<b>${extra}</b><br>` : '') + explain;
+  fb.classList.add('show');
+  if (isCorrect) {
+    playSound('correct');
+    STATE.correctAnswers++;
+    STATE.lessonXp += 10;
+    STATE.lessonCoins += 2;
+    pulseStat('stat-xp');
+    pulseStat('stat-coins');
+  } else {
+    playSound('wrong');
+    STATE.wrongAnswers++;
+    STATE.hearts = Math.max(0, STATE.hearts - 1);
+    updateHeartsDisplay();
+    pulseStat('stat-hearts');
+    const q = STATE.currentLesson.questions[STATE.questionIndex];
+    if (q) STATE.wrongHistory.push({ key: STATE.currentLesson.key, qIndex: STATE.questionIndex });
+  }
+  updateUI();
+}
+
+function nextQuestion() {
+  document.getElementById('feedback').classList.remove('show');
+  if (STATE.hearts <= 0) { STATE.hearts = 3; updateHeartsDisplay(); updateUI(); }
+  STATE.questionIndex++;
+  renderQuestion();
+}
+
+function exitLesson() {
+  if (confirm('¿Seguro que quieres salir? Perderás el progreso.')) {
+    if (catchInterval) clearInterval(catchInterval);
+    if (window._lightningTimer) clearInterval(window._lightningTimer);
+    goToMap();
+  }
+}
+
+function finishLesson() {
+  const lesson = STATE.currentLesson;
+  const key = lesson.key;
+  const total = lesson.questions.length;
+  const accuracy = Math.round((STATE.correctAnswers / total) * 100);
+  const passed = accuracy >= 60;
+  if (passed) {
+    if (!STATE.completedLevels.includes(key)) {
+      STATE.completedLevels.push(key);
+      STATE.lessonsCompleted++;
+      STATE.lessonXp += 20;
+      STATE.lessonCoins += 10;
+    }
+    const newLevel = Math.floor(STATE.xp / 100) + 1;
+    if (newLevel > STATE.level) { STATE.level = newLevel; playSound('levelup'); showToast(`🎉 ¡Subiste al nivel ${newLevel}!`); }
+    const today = new Date().toDateString();
+    if (STATE.lastPlayDate !== today) {
+      const last = STATE.lastPlayDate ? new Date(STATE.lastPlayDate) : null;
+      const diff = last ? Math.floor((new Date(today) - last) / 86400000) : 999;
+      if (diff === 1) STATE.streak++; else if (diff > 1) STATE.streak = 1;
+      STATE.lastPlayDate = today;
+    }
+    checkBadges();
+  }
+  STATE.xp += STATE.lessonXp;
+  STATE.coins += STATE.lessonCoins;
+  document.getElementById('result-xp').textContent = '+' + STATE.lessonXp;
+  document.getElementById('result-coins').textContent = '+' + STATE.lessonCoins;
+  document.getElementById('result-accuracy').textContent = accuracy + '%';
+  document.getElementById('result-title').textContent = passed ? '¡Nivel completado!' : 'Casi lo logras...';
+  document.getElementById('result-subtitle').textContent = passed ? 'Shark está orgulloso de ti 🎉' : '¡Sigue practicando! 💪';
+  renderShark('result-shark', passed ? 'celebrate' : 'sad');
+  showScreen('result');
+  if (passed) { playSound('levelup'); launchConfetti(); }
+  updateUI();
+}
+
+const BADGES = [
+  { id: 'first', icon: '🌟', name: 'Primera vez', check: () => STATE.lessonsCompleted >= 1 },
+  { id: 'streak3', icon: '🔥', name: 'Racha 3', check: () => STATE.streak >= 3 },
+  { id: 'streak7', icon: '💎', name: 'Racha 7', check: () => STATE.streak >= 7 },
+  { id: 'level5', icon: '🏆', name: 'Nivel 5', check: () => STATE.level >= 5 },
+  { id: 'world1', icon: '🏖️', name: 'Playa', check: () => [1,2,3,4,5].every(i => STATE.completedLevels.includes(`1-${i}`)) },
+  { id: 'world2', icon: '🐠', name: 'Arrecife', check: () => [1,2,3,4,5].every(i => STATE.completedLevels.includes(`2-${i}`)) },
+  { id: 'coins100', icon: '', name: '100 monedas', check: () => STATE.coins >= 100 },
+  { id: 'xp500', icon: '⭐', name: '500 XP', check: () => STATE.xp >= 500 },
+  { id: 'perfect', icon: '👑', name: 'Perfecto', check: () => STATE.lessonsCompleted >= 5 }
+];
+function checkBadges() {
+  BADGES.forEach(b => {
+    if (!STATE.badges.includes(b.id) && b.check()) {
+      STATE.badges.push(b.id);
+      showToast(` ¡Nueva insignia: ${b.name}!`);
+      playSound('levelup');
+    }
+  });
+}
+
+const SHOP_ITEMS = {
+  hats: [
+    { id: 'cap', name: 'Gorra', icon: '', price: 30 },
+    { id: 'sombrero', name: 'Sombrero', icon: '🎩', price: 60 },
+    { id: 'hoodie', name: 'Hoodie', icon: '', price: 80 },
+    { id: 'crown', name: 'Corona', icon: '👑', price: 100 }
+  ],
+  accessories: [
+    { id: 'headphones', name: 'Audífonos', icon: '🎧', price: 45 },
+    { id: 'backpack', name: 'Mochila', icon: '🎒', price: 35 }
+  ],
+  skins: [
+    { id: 'golden', name: 'Dorado', icon: '✨', price: 100 },
+    { id: 'pink', name: 'Rosa', icon: '🌸', price: 80 },
+    { id: 'green', name: 'Verde', icon: '🌿', price: 80 },
+    { id: 'purple', name: 'Púrpura', icon: '', price: 90 }
+  ]
+};
+
+function renderShop() {
+  renderShopSection('shop-hats', SHOP_ITEMS.hats, 'hat');
+  renderShopSection('shop-accessories', SHOP_ITEMS.accessories, 'accessory');
+  renderShopSection('shop-skins', SHOP_ITEMS.skins, 'skin');
+}
+function renderShopSection(containerId, items, category) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  items.forEach(item => {
+    const owned = STATE.ownedItems.includes(item.id);
+    const equipped = STATE.equippedItems[category] === item.id || (category === 'skin' && STATE.equippedItems.skin === item.id);
+    const el = document.createElement('div');
+    el.className = 'shop-item' + (owned ? ' owned' : '') + (equipped ? ' equipped' : '');
+    el.innerHTML = `<div class="shop-item-icon">${item.icon}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-price">${owned ? (equipped ? '✓ Equipado' : 'Equipar') : '🪙 ' + item.price}</div>`;
+    el.onclick = () => handleShopClick(item, category);
+    container.appendChild(el);
+  });
+}
+function handleShopClick(item, category) {
+  const owned = STATE.ownedItems.includes(item.id);
+  if (!owned) {
+    if (STATE.coins >= item.price) {
+      STATE.coins -= item.price;
+      STATE.ownedItems.push(item.id);
+      playSound('coin');
+      showToast(`🎉 ¡Compraste ${item.name}!`);
+    } else { showToast(' No tienes suficientes monedas'); return; }
+  } else {
+    if (STATE.equippedItems[category] === item.id) { STATE.equippedItems[category] = category === 'skin' ? 'default' : null; }
+    else { STATE.equippedItems[category] = item.id; }
+    playSound('click');
+  }
+  updateUI();
+  renderShop();
+}
+
+function renderProfile() {
+  renderShark('profile-shark', 'happy');
+  const currentLevelXp = STATE.xp % 100;
+  document.getElementById('profile-level').textContent = `Nivel ${STATE.level} · ${STATE.xp} XP`;
+  document.getElementById('profile-xp-fill').style.width = currentLevelXp + '%';
+  const grid = document.getElementById('badges-grid');
+  grid.innerHTML = '';
+  BADGES.forEach(b => {
+    const earned = STATE.badges.includes(b.id);
+    const el = document.createElement('div');
+    el.className = 'badge' + (earned ? '' : ' locked');
+    el.innerHTML = `<div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div>`;
+    grid.appendChild(el);
+  });
+}
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const particles = [];
+  const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#3a8fd4', '#a78bfa', '#ff9ec7'];
+  for (let i = 0; i < 100; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: -20,
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 10
+    });
+  }
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.rotation += p.rotSpeed;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 180) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+function createBubbles() {
+  const container = document.getElementById('bubbles');
+  for (let i = 0; i < 15; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = Math.random() * 30 + 10;
+    b.style.width = size + 'px'; b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    b.style.animationDelay = Math.random() * 10 + 's';
+    container.appendChild(b);
+  }
+}
+
+function escape(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function unescape(s) { return String(s).replace(/\\'/g, "'").replace(/&quot;/g, '"'); }
+
+loadState();
+createBubbles();
+updateUI();
+renderShark('home-shark', 'happy');
+updateHomeStats();
+document.body.addEventListener('click', () => initAudio(), { once: true });
+</script>
+</body>
+</html>
